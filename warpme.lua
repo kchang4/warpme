@@ -1,8 +1,8 @@
 addon.name      = 'WarpMe';
-addon.author    = 'Modified from Thorny\'s Cudgel';
+addon.author    = 'ai';
 addon.version   = '1.1';
 addon.desc      = 'Warps using spell, equipment, or scroll - whatever is fastest.';
-addon.link      = 'https://ashitaxi.com/';
+addon.link      = 'https://github.com/kchang4/warpme';
 
 require('common');
 local chat = require('chat');
