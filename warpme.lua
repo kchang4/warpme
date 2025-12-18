@@ -108,9 +108,9 @@ local function CheckWarpSpell()
     local subJob = player:GetSubJob();
     local subJobLevel = player:GetSubJobLevel();
     
-    -- Check if main job can cast at current level (LevelRequired is 0-indexed, job IDs are 1-indexed in Lua)
-    local mainJobReq = spell.LevelRequired[mainJob];
-    local subJobReq = spell.LevelRequired[subJob];
+    -- Check if main job can cast at current level (Job IDs are 0-indexed, Lua tables are 1-indexed)
+    local mainJobReq = spell.LevelRequired[mainJob + 1];
+    local subJobReq = spell.LevelRequired[subJob + 1];
     
     local canCastMain = mainJobReq and mainJobReq > 0 and mainJobReq <= mainJobLevel;
     local canCastSub = subJobReq and subJobReq > 0 and subJobReq <= subJobLevel;
@@ -156,9 +156,38 @@ local function CheckWarpScroll()
 end
 
 ashita.events.register('command', 'command_cb', function (e)
-    if string.lower(e.command) == '/warpme' then
-        e.blocked = true;
-        local bestWarpItem = nil;
+    local args = e.command:args();
+    if #args == 0 or string.lower(args[1]) ~= '/warpme' then
+        return;
+    end
+
+    e.blocked = true;
+
+    -- Debug subcommand
+    if #args > 1 and string.lower(args[2]) == 'debug' then
+        local player = AshitaCore:GetMemoryManager():GetPlayer();
+        local resMgr = AshitaCore:GetResourceManager();
+        local spell = resMgr:GetSpellById(WARP_SPELL_ID);
+        
+        print(chat.header('WarpMe-Debug') .. chat.message('Main Job: ') .. chat.color1(2, tostring(player:GetMainJob())) .. chat.message(' Level: ') .. chat.color1(2, tostring(player:GetMainJobLevel())));
+        print(chat.header('WarpMe-Debug') .. chat.message('Sub Job: ') .. chat.color1(2, tostring(player:GetSubJob())) .. chat.message(' Level: ') .. chat.color1(2, tostring(player:GetSubJobLevel())));
+        
+        if spell then
+            local mReq = spell.LevelRequired[player:GetMainJob() + 1];
+            local sReq = spell.LevelRequired[player:GetSubJob() + 1];
+            print(chat.header('WarpMe-Debug') .. chat.message('Spell Req: Main=') .. chat.color1(2, tostring(mReq)) .. chat.message(' Sub=') .. chat.color1(2, tostring(sReq)));
+        end
+        
+        local warpSpell = CheckWarpSpell();
+        if warpSpell then
+            print(chat.header('WarpMe-Debug') .. chat.message('CheckWarpSpell result: ') .. chat.success('Available'));
+        else
+            print(chat.header('WarpMe-Debug') .. chat.message('CheckWarpSpell result: ') .. chat.error('Not Available'));
+        end
+        return;
+    end
+
+    local bestWarpItem = nil;
         local foundAnyItem = false;
 
         local time = GetTimeUTC();
@@ -326,7 +355,6 @@ ashita.events.register('command', 'command_cb', function (e)
             
             return;
         end
-    end
 end);
 
 ashita.events.register('d3d_present', 'present_cb', function ()
