@@ -111,6 +111,10 @@ local function CheckWarpSpell()
     -- Check if main job can cast at current level (Job IDs are 0-indexed, Lua tables are 1-indexed)
     local mainJobReq = spell.LevelRequired[mainJob + 1];
     local subJobReq = spell.LevelRequired[subJob + 1];
+
+    -- Fix for incorrect resources: Warp is level 17 for BLM (Job ID 4)
+    if (mainJob == 4) then mainJobReq = 17; end
+    if (subJob == 4) then subJobReq = 17; end
     
     local canCastMain = mainJobReq and mainJobReq > 0 and mainJobReq <= mainJobLevel;
     local canCastSub = subJobReq and subJobReq > 0 and subJobReq <= subJobLevel;
